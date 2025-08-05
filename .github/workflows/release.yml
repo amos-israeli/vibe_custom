@@ -80,25 +80,13 @@ jobs:
 
 
             - name: Build
-              uses: tauri-apps/tauri-action@v0
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+              run: bunx tauri build ${{ matrix.args }}
+              working-directory: ./desktop
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
               with:
-                  tagName: v__VERSION__ # the action automatically replaces __VERSION__ with the app version.
-                  releaseName: "v__VERSION__"
-                  releaseBody: "What's new? 🎉📣"
-                  prerelease: true
-                  args: ${{ matrix.args }}
-                  projectPath: "./desktop"
-                  tauriScript: bunx tauri
-    update-landing:
-      runs-on: macos-latest
-      needs: publish-tauri
-      steps:
-        - uses: actions/checkout@v4
-        - name: Update landing URLs
-          run: gh workflow run landing.yml
-          env:
-            GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  name: vibe-${{ matrix.platform }}-${{ github.run_number }}
+                  path: |
+                      desktop/src-tauri/target/*/release/bundle/**/*
+                      !desktop/src-tauri/target/*/release/bundle/**/.*
