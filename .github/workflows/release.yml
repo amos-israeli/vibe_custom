@@ -88,5 +88,6 @@ jobs:
               with:
                   name: vibe-${{ matrix.platform }}-${{ github.run_number }}
                   path: |
-                      desktop/src-tauri/target/*/release/bundle/**/*
-                      !desktop/src-tauri/target/*/release/bundle/**/.*
+                      ./desktop/src-tauri/target/*/release/bundle/dmg/*.dmg
+                      ./desktop/src-tauri/target/*/release/bundle/macos/*.app
+                  if-no-files-found: warn
