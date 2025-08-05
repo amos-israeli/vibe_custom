@@ -83,11 +83,14 @@ jobs:
               run: bunx tauri build ${{ matrix.args }}
               working-directory: ./desktop
 
+            - name: List build output
+              run: find . -name "*.dmg" -o -name "*.app" | head -20
+
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4
               with:
                   name: vibe-${{ matrix.platform }}-${{ github.run_number }}
                   path: |
-                      ./desktop/src-tauri/target/*/release/bundle/dmg/*.dmg
-                      ./desktop/src-tauri/target/*/release/bundle/macos/*.app
+                      **/target/*/release/bundle/dmg/*.dmg
+                      **/target/*/release/bundle/macos/*.app
                   if-no-files-found: warn
