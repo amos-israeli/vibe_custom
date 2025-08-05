@@ -71,6 +71,13 @@ export interface Preference {
 
 	advancedTranscribeOptions: AdvancedTranscribeOptions
 	setAdvancedTranscribeOptions: ModifyState<AdvancedTranscribeOptions>
+
+	hotkeysEnabled: boolean
+	setHotkeysEnabled: ModifyState<boolean>
+	startRecordingHotkey: string
+	setStartRecordingHotkey: ModifyState<string>
+	stopRecordingHotkey: string
+	setStopRecordingHotkey: ModifyState<string>
 }
 
 // Create the context
@@ -167,6 +174,11 @@ export function PreferenceProvider({ children }: { children: ReactNode }) {
 		saveNextToAudioFile: true,
 		skipIfExists: true,
 	})
+
+	// Hotkey preferences
+	const [hotkeysEnabled, setHotkeysEnabled] = useLocalStorage<boolean>('prefs_hotkeys_enabled', false)
+	const [startRecordingHotkey, setStartRecordingHotkey] = useLocalStorage<string>('prefs_start_recording_hotkey', 'CommandOrControl+Shift+R')
+	const [stopRecordingHotkey, setStopRecordingHotkey] = useLocalStorage<string>('prefs_stop_recording_hotkey', 'CommandOrControl+Shift+S')
 
 	useEffect(() => {
 		setIsFirstRun(false)
@@ -273,6 +285,12 @@ export function PreferenceProvider({ children }: { children: ReactNode }) {
 		setShouldCheckYtDlpVersion,
 		advancedTranscribeOptions,
 		setAdvancedTranscribeOptions,
+		hotkeysEnabled,
+		setHotkeysEnabled,
+		startRecordingHotkey,
+		setStartRecordingHotkey,
+		stopRecordingHotkey,
+		setStopRecordingHotkey,
 	}
 
 	return <PreferenceContext.Provider value={preference}>{children}</PreferenceContext.Provider>

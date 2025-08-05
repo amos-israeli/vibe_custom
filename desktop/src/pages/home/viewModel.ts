@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useLocalStorage } from 'usehooks-ts'
 import successSound from '~/assets/success.mp3'
+import { useHotkeys } from '~/lib/hotkey'
 import { TextFormat } from '~/components/FormatSelect'
 import { AudioDevice } from '~/lib/audio'
 import * as config from '~/lib/config'
@@ -66,6 +67,22 @@ export function viewModel() {
 	const { updateApp, availableUpdate } = useContext(UpdaterContext)
 	const { setState: setErrorModal } = useContext(ErrorModalContext)
 
+	// Hotkey integration
+	const { registerHotkeys, unregisterHotkeys } = useHotkeys(
+		() => {
+			// Start recording hotkey callback
+			if (!isRecording && !loading) {
+				startRecord()
+			}
+		},
+		() => {
+			// Stop recording hotkey callback
+			if (isRecording) {
+				stopRecord()
+			}
+		}
+	)
+
 	async function onFilesChanged() {
 		if (files.length === 1) {
 			setAudio(new Audio(convertFileSrc(files[0].path)))
@@ -118,6 +135,35 @@ export function viewModel() {
 	useEffect(() => {
 		preferenceRef.current = preference
 	}, [preference])
+
+	// Register/unregister hotkeys when preferences change
+	useEffect(() => {
+		const handleHotkeys = async () => {
+			try {
+				if (preference.hotkeysEnabled) {
+					await registerHotkeys({
+						enabled: true,
+						startRecordingHotkey: preference.startRecordingHotkey,
+						stopRecordingHotkey: preference.stopRecordingHotkey,
+					})
+				} else {
+					await unregisterHotkeys()
+				}
+			} catch (error) {
+				console.error('Failed to manage hotkeys:', error)
+				hotToast.error(t('common.error') + ': ' + String(error), {
+					duration: 5000,
+				})
+			}
+		}
+
+		handleHotkeys()
+
+		// Cleanup on unmount
+		return () => {
+			unregisterHotkeys().catch(console.error)
+		}
+	}, [preference.hotkeysEnabled, preference.startRecordingHotkey, preference.stopRecordingHotkey, registerHotkeys, unregisterHotkeys, t])
 
 	async function cancelYtDlpDownload() {
 		cancelYtDlpRef.current = true

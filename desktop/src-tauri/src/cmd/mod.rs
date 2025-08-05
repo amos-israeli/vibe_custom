@@ -21,6 +21,7 @@ use vibe_core::get_vibe_temp_folder;
 use vibe_core::transcript::Segment;
 use vibe_core::transcript::Transcript;
 pub mod audio;
+pub mod hotkey;
 pub mod ytdlp;
 
 /// Return true if there's internet connection

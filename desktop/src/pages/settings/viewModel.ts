@@ -12,6 +12,8 @@ import { load } from '@tauri-apps/plugin-store'
 import { useStoreValue } from '~/lib/useStoreValue'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { collectLogs, getPrettyVersion } from '~/lib/logs'
+import { hotkeyManager } from '~/lib/hotkey'
+import { toast } from 'react-hot-toast'
 
 async function openModelPath() {
 	let dst = await invoke<string>('get_models_folder')
@@ -156,6 +158,20 @@ export function viewModel() {
 		}
 	}, [])
 
+	async function validateHotkey(event: React.FocusEvent<HTMLInputElement>) {
+		const shortcut = event.target.value.trim()
+		if (!shortcut) return
+
+		try {
+			const isValid = await hotkeyManager.checkHotkeyAvailability(shortcut)
+			if (!isValid) {
+				toast.error(t('common.invalid-hotkey-format'))
+			}
+		} catch (error) {
+			toast.error(t('common.invalid-hotkey-format') + ': ' + String(error))
+		}
+	}
+
 	return {
 		copyLogs,
 		isLogToFileSet,
@@ -174,5 +190,6 @@ export function viewModel() {
 		reportIssue,
 		loadModels,
 		changeModelsFolder,
+		validateHotkey,
 	}
 }

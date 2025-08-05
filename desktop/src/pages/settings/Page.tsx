@@ -250,6 +250,62 @@ export default function SettingsPage({ setVisible }: SettingsPageProps) {
 				</div>
 			)}
 
+			<div className="label mt-10">
+				<span className="label-text">{t('common.hotkeys')}</span>
+			</div>
+			<div className="form-control">
+				<label className="label cursor-pointer">
+					<span className="label-text flex items-center gap-1 cursor-default">
+						<InfoTooltip text={t('common.info-enable-hotkeys')} />
+						{t('common.enable-hotkeys')}
+					</span>
+					<input
+						type="checkbox"
+						className="toggle toggle-primary"
+						onChange={(e) => vm.preference.setHotkeysEnabled(e.target.checked)}
+						checked={vm.preference.hotkeysEnabled}
+					/>
+				</label>
+			</div>
+			
+			{vm.preference.hotkeysEnabled && (
+				<>
+					<label className="form-control w-full py-2">
+						<span className="label-text flex items-center gap-1 cursor-default">
+							<InfoTooltip text={t('common.info-start-recording-hotkey')} />
+							{t('common.start-recording-hotkey')}
+						</span>
+						<input
+							value={vm.preference.startRecordingHotkey}
+							onChange={(e) => vm.preference.setStartRecordingHotkey(e.target.value)}
+							className="input input-bordered font-mono"
+							type="text"
+							placeholder="CommandOrControl+Shift+R"
+							onBlur={vm.validateHotkey}
+						/>
+					</label>
+					<label className="form-control w-full py-2">
+						<span className="label-text flex items-center gap-1 cursor-default">
+							<InfoTooltip text={t('common.info-stop-recording-hotkey')} />
+							{t('common.stop-recording-hotkey')}
+						</span>
+						<input
+							value={vm.preference.stopRecordingHotkey}
+							onChange={(e) => vm.preference.setStopRecordingHotkey(e.target.value)}
+							className="input input-bordered font-mono"
+							type="text"
+							placeholder="CommandOrControl+Shift+S"
+							onBlur={vm.validateHotkey}
+						/>
+					</label>
+					<div className="alert alert-info mt-2">
+						<span className="text-sm">
+							{t('common.hotkey-usage-note')}
+						</span>
+					</div>
+				</>
+			)}
+
 			{/* Logs enabled by default currently */}
 			{/* <div className="form-control w-full mt-3">
 				<label className="label cursor-pointer">

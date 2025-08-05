@@ -65,6 +65,7 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_keepawake::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             cmd::download_file,
             cmd::get_cargo_features,
@@ -96,6 +97,10 @@ fn main() -> Result<()> {
             cmd::ytdlp::get_temp_path,
             cmd::is_crashed_recently,
             cmd::rename_crash_file,
+            cmd::hotkey::register_hotkeys,
+            cmd::hotkey::unregister_hotkeys,
+            cmd::hotkey::check_hotkey_availability,
+            cmd::hotkey::get_registered_hotkeys,
             #[cfg(windows)]
             cmd::set_high_gpu_preference
         ])
