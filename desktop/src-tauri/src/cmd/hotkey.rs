@@ -99,18 +99,12 @@ pub async fn register_hotkeys(
 async fn register_single_hotkey(
     app_handle: &AppHandle,
     shortcut_str: &str,
-    action: &str,
+    _action: &str,
 ) -> Result<()> {
     let shortcut = shortcut_str.parse::<Shortcut>()
         .map_err(|e| eyre::eyre!("Invalid shortcut format '{}': {}", shortcut_str, e))?;
 
-    let app_handle_clone = app_handle.clone();
-    let action_string = action.to_string();
-    
-    app_handle.global_shortcut().register(shortcut, move || {
-        tracing::debug!("Hotkey triggered: {}", action_string);
-        let _ = app_handle_clone.emit("hotkey_triggered", &action_string);
-    })?;
+    app_handle.global_shortcut().register(shortcut)?;
 
     Ok(())
 }

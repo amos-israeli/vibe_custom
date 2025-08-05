@@ -65,7 +65,18 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_keepawake::init())
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app_handle, shortcut, event| {
+                    use tauri_plugin_global_shortcut::ShortcutState;
+                    if event.state == ShortcutState::Pressed {
+                        // Parse shortcut string and emit corresponding event
+                        let shortcut_str = shortcut.to_string();
+                        let _ = app_handle.emit("hotkey_triggered", shortcut_str);
+                    }
+                })
+                .build(),
+        )
         .invoke_handler(tauri::generate_handler![
             cmd::download_file,
             cmd::get_cargo_features,

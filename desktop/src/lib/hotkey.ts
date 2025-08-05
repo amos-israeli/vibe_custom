@@ -72,12 +72,26 @@ class HotkeyManager {
 		}
 	}
 
-	private handleHotkeyTrigger(action: string) {
-		// Emit custom events that the application can listen to
-		const event = new CustomEvent('vibe-hotkey', {
-			detail: { action }
-		})
-		window.dispatchEvent(event)
+	private handleHotkeyTrigger(shortcutStr: string) {
+		// Map shortcut string back to action based on current config
+		if (!this.currentConfig) {
+			return
+		}
+		
+		let action: string | null = null
+		if (shortcutStr === this.currentConfig.startRecordingHotkey) {
+			action = 'start_recording'
+		} else if (shortcutStr === this.currentConfig.stopRecordingHotkey) {
+			action = 'stop_recording'
+		}
+		
+		if (action) {
+			// Emit custom events that the application can listen to
+			const event = new CustomEvent('vibe-hotkey', {
+				detail: { action }
+			})
+			window.dispatchEvent(event)
+		}
 	}
 
 	getCurrentConfig(): HotkeyConfig | null {
