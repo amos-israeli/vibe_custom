@@ -37,9 +37,6 @@ pub fn setup(app: &App) -> Result<(), Box<dyn std::error::Error>> {
 
     // Manage model context
     app.manage(Mutex::new(None::<ModelContext>));
-    
-    // Manage hotkey state
-    app.manage(crate::cmd::hotkey::HotkeyManager::default());
 
     let store = app.store(STORE_FILENAME)?;
 

@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { listen, UnlistenFn } from '@tauri-apps/api/event'
+import { register, unregisterAll } from '@tauri-apps/plugin-global-shortcut'
 import React from 'react'
 
 export interface HotkeyConfig {
@@ -14,38 +14,47 @@ export interface HotkeyError {
 }
 
 class HotkeyManager {
-	private unlistenHotkey: UnlistenFn | null = null
 	private currentConfig: HotkeyConfig | null = null
+	private isRegistered = false
 
 	async registerHotkeys(config: HotkeyConfig): Promise<void> {
 		try {
-			await invoke('register_hotkeys', { config })
+			if (!config.enabled) {
+				await this.unregisterHotkeys()
+				return
+			}
+
+			// Unregister existing shortcuts first
+			await this.unregisterHotkeys()
+
+			// Register hotkeys using the JavaScript API
+			if (config.startRecordingHotkey) {
+				await register(config.startRecordingHotkey, () => {
+					this.handleHotkeyTrigger(config.startRecordingHotkey)
+				})
+			}
+
+			if (config.stopRecordingHotkey) {
+				await register(config.stopRecordingHotkey, () => {
+					this.handleHotkeyTrigger(config.stopRecordingHotkey)
+				})
+			}
+
 			this.currentConfig = config
-			
-			// Listen for hotkey events
-			if (this.unlistenHotkey) {
-				this.unlistenHotkey()
-			}
-			
-			this.unlistenHotkey = await listen<string>('hotkey_triggered', (event) => {
-				this.handleHotkeyTrigger(event.payload)
-			})
+			this.isRegistered = true
+			console.log('Hotkeys registered successfully')
 		} catch (error: any) {
-			// Handle the error appropriately
-			if (error && typeof error === 'object' && 'error' in error) {
-				const hotkeyError = error as HotkeyError
-				throw new Error(hotkeyError.error)
-			}
-			throw error
+			console.error('Failed to register hotkeys:', error)
+			throw new Error(`Failed to register hotkeys: ${error.message || error}`)
 		}
 	}
 
 	async unregisterHotkeys(): Promise<void> {
 		try {
-			await invoke('unregister_hotkeys')
-			if (this.unlistenHotkey) {
-				this.unlistenHotkey()
-				this.unlistenHotkey = null
+			if (this.isRegistered) {
+				await unregisterAll()
+				this.isRegistered = false
+				console.log('All hotkeys unregistered')
 			}
 			this.currentConfig = null
 		} catch (error) {
@@ -99,10 +108,7 @@ class HotkeyManager {
 	}
 
 	cleanup() {
-		if (this.unlistenHotkey) {
-			this.unlistenHotkey()
-			this.unlistenHotkey = null
-		}
+		this.unregisterHotkeys().catch(console.error)
 	}
 }
 
