@@ -47,7 +47,28 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .setup(|app| setup::setup(app))
+        .setup(|app| {
+            // Create app directories
+            let local_app_data_dir = app.path().app_local_data_dir()?;
+            let app_config_dir = app.path().app_config_dir()?;
+            std::fs::create_dir_all(&local_app_data_dir)?;
+            std::fs::create_dir_all(&app_config_dir)?;
+            
+            // Create main window only in non-CLI mode
+            if !crate::cli::is_cli_detected() {
+                let _window = tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("index.html".into()))
+                    .inner_size(1200.0, 800.0)
+                    .min_inner_size(800.0, 700.0)
+                    .center()
+                    .title("Vibe")
+                    .resizable(true)
+                    .focused(true)
+                    .visible(true)
+                    .build()?;
+            }
+            
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             cmd::hotkey::register_hotkeys,
             cmd::hotkey::unregister_hotkeys,
