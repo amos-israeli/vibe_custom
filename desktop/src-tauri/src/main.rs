@@ -44,9 +44,17 @@ fn main() -> Result<()> {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .setup(|_app| {
-            println!("App setup started");
+        .setup(|app| {
+            // Create app directories
+            let local_app_data_dir = app.path().app_local_data_dir()?;
+            let app_config_dir = app.path().app_config_dir()?;
+            std::fs::create_dir_all(&local_app_data_dir)?;
+            std::fs::create_dir_all(&app_config_dir)?;
+            
+            println!("App setup completed successfully");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
